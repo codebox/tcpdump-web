@@ -1,0 +1,23 @@
+{
+  "name": "tcpdump-web",
+  "version": "1.0.0",
+  "description": "Web Interface for tcpdump",
+  "main": "main.js",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codebox/tcpdump-web.git"
+  },
+  "author": "Rob Dawson <rob@codebox.org.uk> (http://codebox.org.uk)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/codebox/tcpdump-web/issues"
+  },
+  "homepage": "https://github.com/codebox/tcpdump-web#readme"
+}
