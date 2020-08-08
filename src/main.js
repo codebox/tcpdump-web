@@ -10,7 +10,7 @@ const rl = readline.createInterface({
 });
 
 rl.on('line', (inputLine) => {
-    const parsedInput = parser.parse(inputLine);
+    const parsedInput = JSON.stringify(parser.parse(inputLine));
     if (parsedInput) {
         webSockets.forEach(ws => ws.send(parsedInput));
     } else {
