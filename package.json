@@ -2,9 +2,10 @@
   "name": "tcpdump-web",
   "version": "1.0.0",
   "description": "Web Interface for tcpdump",
-  "main": "main.js",
+  "main": "src/main.js",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "express-ws": "^4.0.0"
   },
   "devDependencies": {},
   "scripts": {
