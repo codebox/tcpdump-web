@@ -19,16 +19,18 @@ function wrapRegExp(regexpText, propNames, base = {}) {
 }
 
 const
-    regExpArpRequest = wrapRegExp(`Request who-has ([0-9\.]+) tell ([0-9\.]+), .*`, ['requested', 'requestor'], {type: 'arp.request'}),
-    regExpArpReply = wrapRegExp(`Reply ([0-9\.]+) is-at ([^ ]+) .*`, ['ip', 'address'], {type: 'arp.reply'}),
-    regExpArpAnnounce = wrapRegExp(`Announcement ([0-9\.]+), (.*)`, ['ip'], {type: 'arp.announcement'});
+    ipAddress = `[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}`,
+    ipOrHost = `[0-9a-zA-Z][-0-9a-zA-Z\\.]*`,
+    portOrService = `[0-9a-zA-Z]+`,
+    regExpArpRequest = wrapRegExp(`Request who-has (${ipAddress}) tell (${ipAddress}), .*`, ['requested', 'requestor'], {type: 'arp.request'}),
+    regExpArpReply = wrapRegExp(`Reply (${ipAddress}) is-at ([^ ]+) .*`, ['ip', 'address'], {type: 'arp.reply'}),
+    regExpArpAnnounce = wrapRegExp(`Announcement (${ipAddress}), (.*)`, ['ip'], {type: 'arp.announcement'}),
+    regExpUdp = wrapRegExp(`(${ipOrHost})\\.(${portOrService}) > (${ipOrHost})\\.(${portOrService}): UDP, .*`, ['srcHost', 'srcPort', 'dstHost', 'dstPort'], {type: 'udp'}),
+    regExpTcp = wrapRegExp(`(${ipOrHost})\\.(${portOrService}) > (${ipOrHost})\\.(${portOrService}): Flags .*`, ['srcHost', 'srcPort', 'dstHost', 'dstPort'], {type: 'tcp'});
 
 function parseIp4(details) {
     "use strict";
-    return {
-        type : 'ip4',
-        details
-    };
+    return regExpUdp.match(details) || regExpTcp.match(details);
 }
 function parseIp6(details) {
     "use strict";
