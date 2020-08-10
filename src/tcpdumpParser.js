@@ -19,32 +19,32 @@ function wrapRegExp(regexpText, propNames, base = {}) {
 }
 
 const
-    ipAddress = `[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}`,
-    ipOrHost = `[0-9a-zA-Z][-0-9a-zA-Z\\.]*`,
-    portOrService = `[0-9a-zA-Z]+`,
+    ip4Address = `[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}`,
+    ip4OrHost = `[0-9a-zA-Z][-0-9a-zA-Z\\.]*`,
+    portOrService = `[-0-9a-zA-Z]+`,
     dnsService = 'domain',
     mdnsService = 'mdns',
 
-    regExpArpRequest = wrapRegExp(`Request who-has (${ipAddress}) tell (${ipAddress}), .*`, ['requested', 'requestor'], {type: 'arp.request'}),
-    regExpArpReply = wrapRegExp(`Reply (${ipAddress}) is-at ([^ ]+) .*`, ['ip', 'address'], {type: 'arp.reply'}),
-    regExpArpAnnounce = wrapRegExp(`Announcement (${ipAddress}), (.*)`, ['ip'], {type: 'arp.announcement'}),
-    regExpDnsRequest = wrapRegExp(`(${ipOrHost})\\.${portOrService} > (${ipOrHost})\\.${dnsService}: .*`, ['srcHost', 'dnsHost'], {type: 'udp.dns.request'}),
-    regExpDnsResponse = wrapRegExp(`(${ipOrHost})\\.${dnsService} > (${ipOrHost})\\.${portOrService}: .*`, ['dnsHost', 'srcHost'], {type: 'udp.dns.response'}),
-    regExpMdns = wrapRegExp(`(${ipOrHost})\\.${mdnsService} > (${ipOrHost})\\.${mdnsService}: .*`, ['srcHost', 'dstHost'], {type: 'mdns'}),
-    regExpUdp = wrapRegExp(`(${ipOrHost})\\.(${portOrService}) > (${ipOrHost})\\.(${portOrService}): UDP, .*`, ['srcHost', 'srcPort', 'dstHost', 'dstPort'], {type: 'udp'}),
-    regExpTcp = wrapRegExp(`(${ipOrHost})\\.(${portOrService}) > (${ipOrHost})\\.(${portOrService}): Flags .*`, ['srcHost', 'srcPort', 'dstHost', 'dstPort'], {type: 'tcp'});
+    regExpArpRequest = wrapRegExp(`Request who-has (${ip4Address}) \(.*\) tell (${ip4Address}), .*`, ['requested', 'requestor'], {type: 'arp.request'}),
+    regExpArpReply = wrapRegExp(`Reply (${ip4Address}) is-at ([^ ]+) .*`, ['ip', 'address'], {type: 'arp.reply'}),
+    regExpArpAnnounce = wrapRegExp(`Announcement (${ip4Address}), (.*)`, ['ip'], {type: 'arp.announcement'}),
+    regExpArpProbe = wrapRegExp(`Probe (${ip4Address}), (.*)`, ['ip'], {type: 'arp.probe'}),
+    regExpDnsRequest = wrapRegExp(`(${ip4OrHost})\\.${portOrService} > (${ip4OrHost})\\.${dnsService}: .*`, ['srcHost', 'dnsHost'], {type: 'udp.dns.request'}),
+    regExpDnsResponse = wrapRegExp(`(${ip4OrHost})\\.${dnsService} > (${ip4OrHost})\\.${portOrService}: .*`, ['dnsHost', 'srcHost'], {type: 'udp.dns.response'}),
+    regExpIp4Mdns = wrapRegExp(`(${ip4OrHost})\\.${mdnsService} > (${ip4OrHost})\\.${mdnsService}: .*`, ['srcHost', 'dstHost'], {type: 'mdns'}),
+    regExpUdp = wrapRegExp(`(${ip4OrHost})\\.(${portOrService}) > (${ip4OrHost})\\.(${portOrService}): UDP, .*`, ['srcHost', 'srcPort', 'dstHost', 'dstPort'], {type: 'udp'}),
+    regExpTcp = wrapRegExp(`(${ip4OrHost})\\.(${portOrService}) > (${ip4OrHost})\\.(${portOrService}): Flags .*`, ['srcHost', 'srcPort', 'dstHost', 'dstPort'], {type: 'tcp'});
 
 function parseIp4(details) {
     "use strict";
-    return regExpDnsRequest.match(details) || regExpDnsResponse.match(details) || regExpUdp.match(details) || regExpTcp.match(details) || regExpMdns.match(details);
+    return regExpDnsRequest.match(details) || regExpDnsResponse.match(details) || regExpUdp.match(details) || regExpTcp.match(details) || regExpIp4Mdns.match(details);
 }
 function parseIp6(details) {
     "use strict";
-    return regExpMdns.match(details);
 }
 function parseArp(details) {
     "use strict";
-    return regExpArpRequest.match(details) || regExpArpReply.match(details) || regExpArpAnnounce.match(details);
+    return regExpArpRequest.match(details) || regExpArpReply.match(details) || regExpArpAnnounce.match(details) || regExpArpProbe.match(details);
 }
 
 const parsers = {
