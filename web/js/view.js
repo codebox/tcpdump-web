@@ -44,9 +44,19 @@ const view = (() => {
     }
 
     return {
-        add(item) {
-            const elList = routeToElement(item);
-            addListItem(elList, format(item));
+        // add(item) {
+        //     const elList = routeToElement(item);
+        //     addListItem(elList, format(item));
+        // }
+        update(model) {
+            elTcpList.innerHTML = '';
+            model.getTcp().forEach(obj => {
+                addListItem(elTcpList, `${obj.srcHost}:${obj.srcPort} - ${obj.dstHost}:${obj.dstPort} [${obj.count}]`);
+            });
+            elUdpList.innerHTML = '';
+            model.getUdp().forEach(obj => {
+                addListItem(elUdpList, `${obj.srcHost}:${obj.srcPort} - ${obj.dstHost}:${obj.dstPort} [${obj.count}]`);
+            });
         }
     };
 })();

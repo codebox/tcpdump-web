@@ -11,6 +11,15 @@ const model = (() => {
             `${dstHostPort}_${srcHostPort}`;
     }
 
+    function doExpiry(obj) {
+        Object.keys(obj).forEach(key => {
+            obj[key].count--;
+            if (obj[key].count <= 0) {
+                delete obj[key];
+            }
+        });
+    }
+
     return {
         tcp(srcHost, srcPort, dstHost, dstPort) {
             const key = makeHostPortPairKey(srcHost, srcPort, dstHost, dstPort);
@@ -25,6 +34,16 @@ const model = (() => {
                 udp[key] = {srcHost, srcPort, dstHost, dstPort, count:0};
             }
             udp[key].count++;
+        },
+        getTcp(){
+            return Object.values(tcp).sort((o1,o2) => o1.count - o2.count);
+        },
+        getUdp(){
+            return Object.values(udp).sort((o1,o2) => o1.count - o2.count);
+        },
+        expire() {
+            doExpiry(tcp);
+            doExpiry(udp);
         }
     };
 })();
