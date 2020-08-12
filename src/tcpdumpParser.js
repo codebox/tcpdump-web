@@ -1,3 +1,5 @@
+const os = require('os');
+
 const REGEXP_TOP_LEVEL = /([0-9.:]+) ([^ ]+) (.*)/;
 
 function wrapRegExp(regexpText, propNames, base = {}) {

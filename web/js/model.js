@@ -1,14 +1,12 @@
-const model = (() => {
+const LOCAL = 'local',
+    model = (() => {
     "use strict";
-    const tcp = {}, udp = {};
+    const tcp = {}, udp = {}, local = new Set();
 
-    function makeHostPortPairKey(srcHost, srcPort, dstHost, dstPort) {
-        const srcHostPort = `${srcHost}_${srcPort}`,
-            dstHostPort = `${dstHost}_${dstPort}`;
-
-        return srcHostPort < dstHostPort ?
-            `${srcHostPort}_${dstHostPort}` :
-            `${dstHostPort}_${srcHostPort}`;
+    function makeHostPairKey(srcHost, dstHost) {
+        return srcHost < dstHost ?
+            `${srcHost}_${dstHost}` :
+            `${dstHost}_${srcHost}`;
     }
 
     function doExpiry(obj) {
@@ -20,20 +18,36 @@ const model = (() => {
         });
     }
 
+    function formatHostName(name) {
+        return local.has(name) ? LOCAL : name;
+    }
+
     return {
-        tcp(srcHost, srcPort, dstHost, dstPort) {
-            const key = makeHostPortPairKey(srcHost, srcPort, dstHost, dstPort);
+        setLocal(localAddresses) {
+            localAddresses.forEach(addr => local.add(addr));
+        },
+        tcp(_srcHost, srcPort, _dstHost, dstPort) {
+            const srcHost = formatHostName(_srcHost),
+                dstHost = formatHostName(_dstHost),
+                key = makeHostPairKey(srcHost, srcPort, dstHost, dstPort);
             if (!(key in tcp)) {
-                tcp[key] = {srcHost, srcPort, dstHost, dstPort, count:0};
+                tcp[key] = {srcHost, dstHost, count:0, ports: new Set()};
             }
             tcp[key].count++;
+            tcp[key].ports.add(srcPort);
+            tcp[key].ports.add(dstPort);
         },
-        udp(srcHost, srcPort, dstHost, dstPort) {
-            const key = makeHostPortPairKey(srcHost, srcPort, dstHost, dstPort);
+        udp(_srcHost, srcPort, _dstHost, dstPort) {
+            const srcHost = formatHostName(_srcHost),
+                dstHost = formatHostName(_dstHost),
+                key = makeHostPairKey(srcHost, srcPort, dstHost, dstPort);
+
             if (!(key in udp)) {
-                udp[key] = {srcHost, srcPort, dstHost, dstPort, count:0};
+                udp[key] = {srcHost, dstHost, count:0, ports: new Set()};
             }
             udp[key].count++;
+            udp[key].ports.add(srcPort);
+            udp[key].ports.add(dstPort);
         },
         getTcp(){
             return Object.values(tcp).sort((o1,o2) => o1.count - o2.count);

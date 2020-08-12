@@ -1,5 +1,9 @@
 const socket = new WebSocket('ws://localhost:3000/ws');
 
+fetch('//localhost:3000/local')
+    .then(response => response.json())
+    .then(data => model.setLocal(data));
+
 // Connection opened
 socket.addEventListener('open', function (event) {
     console.log('opened',socket.readyState)

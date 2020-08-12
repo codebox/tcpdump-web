@@ -1,9 +1,11 @@
 const express = require('express'),
     enableWs = require('express-ws'),
     readline = require('readline'),
-    parser = require('./tcpdumpParser');
+    parser = require('./tcpdumpParser'),
+    os = require('os');
 
 const PORT = 3000;
+
 
 const rl = readline.createInterface({
     input: process.stdin
@@ -30,6 +32,11 @@ app.ws('/ws', (ws, req) => {
         console.log('ws closed');
         webSockets.delete(ws);
     })
+});
+
+app.get('/local', (req, res) => {
+    const localAddresses = Object.values(os.networkInterfaces()).flatMap(o=>o).map(o => o.address);
+    res.send(localAddresses)
 });
 
 app.listen(PORT, () => {

@@ -15,18 +15,18 @@ const view = (() => {
         return li;
     }
 
-    const typeFormatters = {
-        'arp.request' : obj => `Request for ${obj.requested} from ${obj.requestor}`,
-        'arp.reply' : obj => `Response: ${obj.address} is ${obj.ip}`
-    };
-
-    function format(obj) {
-        const formatter = typeFormatters[obj.type];
-        if (formatter) {
-            return formatter(obj);
-        }
-        return JSON.stringify(obj);
-    }
+    // const typeFormatters = {
+    //     'arp.request' : obj => `Request for ${obj.requested} from ${obj.requestor}`,
+    //     'arp.reply' : obj => `Response: ${obj.address} is ${obj.ip}`
+    // };
+    //
+    // function format(obj) {
+    //     const formatter = typeFormatters[obj.type];
+    //     if (formatter) {
+    //         return formatter(obj);
+    //     }
+    //     return JSON.stringify(obj);
+    // }
 
     function routeToElement(obj) {
         const type = obj.type;
@@ -43,6 +43,12 @@ const view = (() => {
         }
     }
 
+    function format(obj) {
+        const {srcHost, dstHost} = obj,
+            firstHost = dstHost === LOCAL ? dstHost : srcHost,
+            secondHost = dstHost === LOCAL ? srcHost : dstHost;
+        return `${firstHost} [${Array.from(obj.ports).join()}] ${secondHost} [${obj.count}]`;
+    }
     return {
         // add(item) {
         //     const elList = routeToElement(item);
@@ -51,11 +57,11 @@ const view = (() => {
         update(model) {
             elTcpList.innerHTML = '';
             model.getTcp().forEach(obj => {
-                addListItem(elTcpList, `${obj.srcHost}:${obj.srcPort} - ${obj.dstHost}:${obj.dstPort} [${obj.count}]`);
+                addListItem(elTcpList, format(obj));
             });
             elUdpList.innerHTML = '';
             model.getUdp().forEach(obj => {
-                addListItem(elUdpList, `${obj.srcHost}:${obj.srcPort} - ${obj.dstHost}:${obj.dstPort} [${obj.count}]`);
+                addListItem(elUdpList, format(obj));
             });
         }
     };
