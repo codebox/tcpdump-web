@@ -20,42 +20,28 @@ function wrapRegExp(regexpText, propNames, base = {}) {
     };
 }
 
-const
-    ip4Address = `[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}`,
-    ip4OrHost = `[0-9a-zA-Z][-0-9a-zA-Z\\.]*`,
-    portOrService = `[-0-9a-zA-Z]+`,
-    dnsService = 'domain',
-    mdnsService = 'mdns',
+const lineParsers = {};
 
-    regExpArpRequest = wrapRegExp(`Request who-has (${ip4Address}) \(.*\) tell (${ip4Address}), .*`, ['requested', 'requestor'], {type: 'arp.request'}),
-    regExpArpReply = wrapRegExp(`Reply (${ip4Address}) is-at ([^ ]+) .*`, ['ip', 'address'], {type: 'arp.reply'}),
-    regExpArpAnnounce = wrapRegExp(`Announcement (${ip4Address}), (.*)`, ['ip'], {type: 'arp.announcement'}),
-    regExpArpProbe = wrapRegExp(`Probe (${ip4Address}), (.*)`, ['ip'], {type: 'arp.probe'}),
-    regExpDnsRequest = wrapRegExp(`(${ip4OrHost})\\.${portOrService} > (${ip4OrHost})\\.${dnsService}: .*`, ['srcHost', 'dnsHost'], {type: 'udp.dns.request'}),
-    regExpDnsResponse = wrapRegExp(`(${ip4OrHost})\\.${dnsService} > (${ip4OrHost})\\.${portOrService}: .*`, ['dnsHost', 'srcHost'], {type: 'udp.dns.response'}),
-    regExpIp4Mdns = wrapRegExp(`(${ip4OrHost})\\.${mdnsService} > (${ip4OrHost})\\.${mdnsService}: .*`, ['srcHost', 'dstHost'], {type: 'mdns'}),
-    regExpUdp = wrapRegExp(`(${ip4OrHost})\\.(${portOrService}) > (${ip4OrHost})\\.(${portOrService}): UDP, .*`, ['srcHost', 'srcPort', 'dstHost', 'dstPort'], {type: 'udp'}),
-    regExpTcp = wrapRegExp(`(${ip4OrHost})\\.(${portOrService}) > (${ip4OrHost})\\.(${portOrService}): Flags .*`, ['srcHost', 'srcPort', 'dstHost', 'dstPort'], {type: 'tcp'});
+exports.init = parsers => {
+    "use strict";
+    const ip4Address = `[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}`,
+        ip4OrHost = `[0-9a-zA-Z][-0-9a-zA-Z\\.]*`,
+        portOrService = `[-0-9a-zA-Z]+`,
+        dnsService = 'domain',
+        mdnsService = 'mdns';
 
-function parseIp4(details) {
-    "use strict";
-    return regExpDnsRequest.match(details) || regExpDnsResponse.match(details) || regExpUdp.match(details) || regExpTcp.match(details) || regExpIp4Mdns.match(details);
-}
-function parseIp6(details) {
-    "use strict";
-}
-function parseArp(details) {
-    "use strict";
-    return regExpArpRequest.match(details) || regExpArpReply.match(details) || regExpArpAnnounce.match(details) || regExpArpProbe.match(details);
-}
-
-const parsers = {
-    'IP' : parseIp4,
-    'IP6' : parseIp6,
-    'ARP,' : parseArp
+    parsers.forEach(parser => {
+        const type = parser.type;
+        if (!(type in lineParsers)) {
+            lineParsers[type] = [];
+        }
+        const regexText = eval("`" + parser.pattern + "`"), // I know, I know...
+            propNames = parser.fields,
+            baseObj = {type, subtype: parser.subtype};
+        console.log(regexText)
+        lineParsers[type].push(wrapRegExp(regexText, propNames, baseObj));
+    });
 };
-
-const nullParser = line => {};
 
 exports.parse = line => {
     "use strict";
@@ -64,7 +50,7 @@ exports.parse = line => {
         const ts = match[1],
             protocol = match[2],
             other = match[3],
-            parser = parsers[protocol] || nullParser;
-        return parser(other);
+            parsers = lineParsers[protocol] || [];
+        return parsers.map(lineParser => lineParser.match(other)).filter(o => o)[0];
     }
 };

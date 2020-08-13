@@ -1,0 +1,90 @@
+{
+  "web": {
+    "port": 3000
+  },
+  "parsers": [
+    {
+      "type": "ARP",
+      "subtype": "arp.request",
+      "fields": [
+        "requested",
+        "requestor"
+      ],
+      "pattern": "Request who-has (${ip4Address}) \\(.*\\) tell (${ip4Address}), .*"
+    },
+    {
+      "type": "ARP",
+      "subtype": "arp.reply",
+      "fields": [
+        "ip",
+        "address"
+      ],
+      "pattern": "Reply (${ip4Address}) is-at ([^ ]+) .*"
+    },
+    {
+      "type": "ARP",
+      "subtype": "arp.announcement",
+      "fields": [
+        "ip"
+      ],
+      "pattern": "Announcement (${ip4Address}), (.*)"
+    },
+    {
+      "type": "ARP",
+      "subtype": "arp.probe",
+      "fields": [
+        "ip"
+      ],
+      "pattern": "Probe (${ip4Address}), (.*)"
+    },
+    {
+      "type": "IP",
+      "subtype": "udp.dns.request",
+      "fields": [
+        "srcHost",
+        "dnsHost"
+      ],
+      "pattern": "(${ip4OrHost})\\.${portOrService} > (${ip4OrHost})\\.${dnsService}: .*"
+    },
+    {
+      "type": "IP",
+      "subtype": "udp.dns.response",
+      "fields": [
+        "dnsHost",
+        "srcHost"
+      ],
+      "pattern": "(${ip4OrHost})\\.${dnsService} > (${ip4OrHost})\\.${portOrService}: .*"
+    },
+    {
+      "type": "IP",
+      "subtype": "mdns",
+      "fields": [
+        "srcHost",
+        "dstHost"
+      ],
+      "pattern": "(${ip4OrHost})\\.${mdnsService} > (${ip4OrHost})\\.${mdnsService}: .*"
+    },
+    {
+      "type": "IP",
+      "subtype": "udp",
+      "fields": [
+        "srcHost",
+        "srcPort",
+        "dstHost",
+        "dstPort"
+      ],
+      "pattern": "(${ip4OrHost})\\.(${portOrService}) > (${ip4OrHost})\\.(${portOrService}): UDP, .*"
+    },
+    {
+      "type": "IP",
+      "subtype": "tcp",
+      "fields": [
+        "srcHost",
+        "srcPort",
+        "dstHost",
+        "dstPort"
+      ],
+      "pattern": "(${ip4OrHost})\\.(${portOrService}) > (${ip4OrHost})\\.(${portOrService}): Flags .*"
+    }
+  ]
+}

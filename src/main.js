@@ -2,10 +2,10 @@ const express = require('express'),
     enableWs = require('express-ws'),
     readline = require('readline'),
     parser = require('./tcpdumpParser'),
-    os = require('os');
+    os = require('os'),
+    config = require('./config.json');
 
-const PORT = 3000;
-
+parser.init(config.parsers);
 
 const rl = readline.createInterface({
     input: process.stdin
@@ -39,6 +39,7 @@ app.get('/local', (req, res) => {
     res.send(localAddresses)
 });
 
+const PORT = config.web.port;
 app.listen(PORT, () => {
     console.log(`Listening on http://localhost:${PORT}`)
 });
