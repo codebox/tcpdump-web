@@ -20,6 +20,13 @@ function wrapRegExp(regexpText, propNames, base = {}) {
     };
 }
 
+function buildUnparsedLineObject(protocol, other) {
+    return {
+        type: protocol,
+        subtype: "?",
+        raw: other
+    };
+}
 const lineParsers = {};
 
 exports.init = parserDetails => {
@@ -51,7 +58,10 @@ exports.parse = line => {
         const ts = match[1],
             protocol = match[2],
             other = match[3],
-            parsers = lineParsers[protocol] || [];
-        return parsers.map(lineParser => lineParser.match(other)).filter(o => o)[0];
+            parsers = lineParsers[protocol] || [],
+            parsedLine = parsers.map(lineParser => lineParser.match(other)).filter(o => o)[0];
+
+        return parsedLine || buildUnparsedLineObject(protocol, other);
     }
+    console.warn("Malformed line received: " + line);
 };
