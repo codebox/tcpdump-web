@@ -5,27 +5,18 @@ html, body {
     padding: 0;
 }
 div {
-    border: 1px solid red;
     box-sizing: border-box;
     overflow: scroll;
 }
 #container {
     height: 100%;
-    display: grid;
-    grid-template-columns: 200px 1fr;
-    grid-auto-rows: minmax(200px, auto);
-}
-.box {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
 }
-.box h2 {
-    flex: 0 0 20px;
-    padding: 5px;
-    margin: 0;
+#sidebar {
+    flex: 0 0 200px;
+    border-right: 1px solid grey;
 }
-.box ul {
-    flex: 1 1 100px;
-    margin: 0;
-    border: 1px solid green;
+#canvas {
+    flex: 1 1 400px;
 }

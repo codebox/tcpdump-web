@@ -12,9 +12,9 @@ socket.addEventListener('open', function (event) {
 // Listen for messages
 socket.addEventListener('message', function (event) {
     const msg = JSON.parse(event.data);
-    if (msg.type === 'tcp') {
+    if (msg.subtype === 'tcp') {
         model.tcp(msg.srcHost, msg.srcPort, msg.dstHost, msg.dstPort);
-    } else if (msg.type === 'udp') {
+    } else if (msg.subtype === 'udp') {
         model.udp(msg.srcHost, msg.srcPort, msg.dstHost, msg.dstPort);
     } else {
         console.log(msg)

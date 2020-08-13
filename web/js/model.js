@@ -1,63 +1,104 @@
 const LOCAL = 'local',
     model = (() => {
     "use strict";
-    const tcp = {}, udp = {}, local = new Set();
+    const local = new Set(),
+        hostConnectionCounts = {},
+        connections = {},
+        serviceNameRegex = /.*[a-z].*/i;
 
-    function makeHostPairKey(srcHost, dstHost) {
-        return srcHost < dstHost ?
-            `${srcHost}_${dstHost}` :
-            `${dstHost}_${srcHost}`;
+    function formatHostName(name) {
+        return local.has(name) ? LOCAL : name;
     }
 
-    function doExpiry(obj) {
-        Object.keys(obj).forEach(key => {
-            obj[key].count--;
-            if (obj[key].count <= 0) {
-                delete obj[key];
+    function getConnectionType(srcPort, dstPort) {
+        if (srcPort.match(serviceNameRegex)) {
+            return srcPort;
+        } else if (dstPort.match(serviceNameRegex)) {
+            return dstPort;
+        }
+        return '?'
+    }
+
+    function addConnection(srcHost, dstHost, connectionType) {
+        const [host1, host2] = [srcHost, dstHost].sort();
+        if (!(host1 in connections)) {
+            connections[host1] = {};
+        }
+        if (!(host2 in connections[host1])) {
+            connections[host1][host2] = {};
+        }
+        if (!(connectionType in connections[host1][host2])) {
+            connections[host1][host2][connectionType] = 0;
+        }
+        connections[host1][host2][connectionType]++;
+    }
+
+    function expireConnections() {
+        Object.keys(connections).forEach(host1 => {
+            Object.keys(connections[host1]).forEach(host2 => {
+                Object.keys(connections[host1][host2]).forEach(connectionType => {
+                    if (! --connections[host1][host2][connectionType]) {
+                        delete connections[host1][host2][connectionType];
+                        hostConnectionCounts[host1]--;
+                        hostConnectionCounts[host2]--;
+                        if (!Object.keys(connections[host1][host2]).length) {
+                            delete connections[host1][host2];
+                            if (!Object.keys(connections[host1]).length) {
+                                delete connections[host1];
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    }
+
+    function expireHosts() {
+        Object.keys(hostConnectionCounts).forEach(host => {
+            if (hostConnectionCounts[host] === 0) {
+                delete hostConnectionCounts[host];
+            } else if (hostConnectionCounts[host] < 0) {
+                console.assert(`Connection count for ${host} is ${hostConnectionCounts[host]} but it should never be less than 0`)
             }
         });
     }
 
-    function formatHostName(name) {
-        return local.has(name) ? LOCAL : name;
+    function addHost(host) {
+        if (!(host in hostConnectionCounts)) {
+            hostConnectionCounts[host] = 0;
+        }
+        hostConnectionCounts[host]++;
     }
 
     return {
         setLocal(localAddresses) {
             localAddresses.forEach(addr => local.add(addr));
         },
-        tcp(_srcHost, srcPort, _dstHost, dstPort) {
-            const srcHost = formatHostName(_srcHost),
-                dstHost = formatHostName(_dstHost),
-                key = makeHostPairKey(srcHost, srcPort, dstHost, dstPort);
-            if (!(key in tcp)) {
-                tcp[key] = {srcHost, dstHost, count:0, ports: new Set()};
-            }
-            tcp[key].count++;
-            tcp[key].ports.add(srcPort);
-            tcp[key].ports.add(dstPort);
+        tcp(srcHost, srcPort, dstHost, dstPort) {
+            const srcHost = formatHostName(srcHost),
+                dstHost = formatHostName(dstHost),
+                connectionType = getConnectionType(srcPort, dstPort);
+            addHost(srcHost);
+            addHost(dstHost);
+            addConnection(srcHost, dstHost, connectionType);
         },
-        udp(_srcHost, srcPort, _dstHost, dstPort) {
-            const srcHost = formatHostName(_srcHost),
-                dstHost = formatHostName(_dstHost),
-                key = makeHostPairKey(srcHost, srcPort, dstHost, dstPort);
-
-            if (!(key in udp)) {
-                udp[key] = {srcHost, dstHost, count:0, ports: new Set()};
-            }
-            udp[key].count++;
-            udp[key].ports.add(srcPort);
-            udp[key].ports.add(dstPort);
+        udp(srcHost, srcPort, dstHost, dstPort) {
+            const srcHost = formatHostName(srcHost),
+                dstHost = formatHostName(dstHost),
+                connectionType = getConnectionType(srcPort, dstPort);
+            addHost(srcHost);
+            addHost(dstHost);
+            addConnection(srcHost, dstHost, connectionType);
         },
-        getTcp(){
-            return Object.values(tcp).sort((o1,o2) => o1.count - o2.count);
+        getHosts(){
+            return Array.from(Object.keys(hostConnectionCounts));
         },
-        getUdp(){
-            return Object.values(udp).sort((o1,o2) => o1.count - o2.count);
+        getConnections(){
+            return {...connections};
         },
         expire() {
-            doExpiry(tcp);
-            doExpiry(udp);
+            expireConnections();
+            expireHosts();
         }
     };
 })();
