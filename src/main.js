@@ -5,7 +5,7 @@ const express = require('express'),
     os = require('os'),
     config = require('./config.json');
 
-parser.init(config.parsers);
+parser.init(config.parser);
 
 const rl = readline.createInterface({
     input: process.stdin

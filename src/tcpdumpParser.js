@@ -22,23 +22,24 @@ function wrapRegExp(regexpText, propNames, base = {}) {
 
 const lineParsers = {};
 
-exports.init = parsers => {
+exports.init = parserDetails => {
     "use strict";
-    const ip4Address = `[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}`,
-        ip4OrHost = `[0-9a-zA-Z][-0-9a-zA-Z\\.]*`,
-        portOrService = `[-0-9a-zA-Z]+`,
-        dnsService = 'domain',
-        mdnsService = 'mdns';
+    function doSubstitutions(pattern) {
+        let patternWithSubstitutions = pattern;
+        Object.keys(parserDetails.substitutions).forEach(substText => {
+            patternWithSubstitutions = patternWithSubstitutions.split("${" + substText + "}").join(parserDetails.substitutions[substText]);
+        });
+        return patternWithSubstitutions;
+    }
 
-    parsers.forEach(parser => {
+    parserDetails.lineParsers.forEach(parser => {
         const type = parser.type;
         if (!(type in lineParsers)) {
             lineParsers[type] = [];
         }
-        const regexText = eval("`" + parser.pattern + "`"), // I know, I know...
+        const regexText = doSubstitutions(parser.pattern),
             propNames = parser.fields,
             baseObj = {type, subtype: parser.subtype};
-        console.log(regexText)
         lineParsers[type].push(wrapRegExp(regexText, propNames, baseObj));
     });
 };
