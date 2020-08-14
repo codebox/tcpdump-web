@@ -5,12 +5,7 @@ const view = (() => {
 
     return {
         update(connections) {
-            model.getTcp().forEach(obj => {
-                addListItem(elTcpList, format(obj));
-            });
-            model.getUdp().forEach(obj => {
-                addListItem(elUdpList, format(obj));
-            });
+            // update view model with new hosts, adjust positions using spring placement
         }
     };
 })();
