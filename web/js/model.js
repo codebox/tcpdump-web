@@ -74,17 +74,17 @@ const LOCAL = 'local',
         setLocal(localAddresses) {
             localAddresses.forEach(addr => local.add(addr));
         },
-        tcp(srcHost, srcPort, dstHost, dstPort) {
-            const srcHost = formatHostName(srcHost),
-                dstHost = formatHostName(dstHost),
+        tcp(unformattedSrcHost, srcPort, unformattedDstHost, dstPort) {
+            const srcHost = formatHostName(unformattedSrcHost),
+                dstHost = formatHostName(unformattedDstHost),
                 connectionType = getConnectionType(srcPort, dstPort);
             addHost(srcHost);
             addHost(dstHost);
             addConnection(srcHost, dstHost, connectionType);
         },
-        udp(srcHost, srcPort, dstHost, dstPort) {
-            const srcHost = formatHostName(srcHost),
-                dstHost = formatHostName(dstHost),
+        udp(unformattedSrcHost, srcPort, unformattedDstHost, dstPort) {
+            const srcHost = formatHostName(unformattedSrcHost),
+                dstHost = formatHostName(unformattedDstHost),
                 connectionType = getConnectionType(srcPort, dstPort);
             addHost(srcHost);
             addHost(dstHost);

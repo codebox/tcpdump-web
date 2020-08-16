@@ -16,9 +16,10 @@
         "subtype": "arp.request",
         "fields": [
           "requested",
+          "_",
           "requestor"
         ],
-        "pattern": "Request who-has (${ip4Address}) \\(.*\\) tell (${ip4Address}), .*"
+        "pattern": "Request who-has (${ip4Address}) (\\(.*\\) )?tell (${ip4Address}), .*"
       },
       {
         "type": "ARP",
