@@ -21,6 +21,7 @@ function wrapRegExp(regexpText, propNames, base = {}) {
 }
 
 function buildUnparsedLineObject(protocol, other) {
+    console.warn('Unparsed line', protocol, other);
     return {
         type: protocol,
         subtype: "?",

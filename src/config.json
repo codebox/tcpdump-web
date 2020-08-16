@@ -93,6 +93,16 @@
           "dstPort"
         ],
         "pattern": "(${ip4OrHost})\\.(${portOrService}) > (${ip4OrHost})\\.(${portOrService}): Flags .*"
+      },
+      {
+        "type": "IP",
+        "subtype": "icmp",
+        "fields": [
+          "srcHost",
+          "dstHost",
+          "type"
+        ],
+        "pattern": "(${ip4OrHost}) > (${ip4OrHost}): ICMP ([^,]+),.*"
       }
     ]
   }
