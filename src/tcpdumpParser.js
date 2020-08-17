@@ -28,7 +28,7 @@ function buildUnparsedLineObject(protocol, other) {
         raw: other
     };
 }
-const lineParsers = {};
+let lineParsers = {};
 
 exports.init = parserDetails => {
     "use strict";
@@ -40,6 +40,7 @@ exports.init = parserDetails => {
         return patternWithSubstitutions;
     }
 
+    lineParsers = {};
     parserDetails.lineParsers.forEach(parser => {
         const type = parser.type;
         if (!(type in lineParsers)) {
